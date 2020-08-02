@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+   <script src="../js/jquery-3.3.1.js" type="text/javascript"></script>
+    <script src="../js/sweetalert.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        var globalData;
+    </script>
+
+   
+</head>
+
+<body onload="readEmpruntRetours()" >
+       <div style="width: 50%; margin: 0 auto; ">
+        <div>
+            <h1> EmpruntsRetours</h1>
+            <table border="1" width="100%" >
+                <thead>
+                    <tr>
+                        <td colspan="5" align="right" border="0">
+                            <a href="EmpruntRetour_create.html" title="Ajouter un nouveau EmpruntRetour">Nouveau EmpruntRetour</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>CIN</th>
+                        <th>Code Livre</th>
+                        <th>Date Emprunt</th>
+                        <th>Date Retour</th>
+                        <th width="200">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="listeEmpruntRetours">
+                    <tr>
+                        <td colspan="5">no record</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script type="text/javascript">
+        //Begin readThemesOnLoad
+        function readEmpruntRetours() {
+            $.ajax({
+                url: '../../backend/emprunt.php?action=read',
+                type: 'GET',
+                dataType: 'json'
+            })
+                .done(function (res) {
+                    if (res.success) {
+                        var tr;
+                        $.each(res.data, function (i, EmpruntRetour) {
+                            tr += '<tr>' +
+                                '<td>' + EmpruntRetour.cin + '</td>' +
+                                '<td>' + EmpruntRetour.idLivre + '</td>' +
+                                '<td>' + EmpruntRetour.dateEmprunt + '</td>' +
+                                '<td>' + EmpruntRetour.dateRetour + '</td>' +
+                                '<td>' +
+                                '<a href="#" onclick="showEmpruntRetour(' + EmpruntRetour.cin + ')" title="Afficher EmpruntRetour" >show</a> ' +
+                                '<a href="#" onclick="editEmpruntRetour(' + EmpruntRetour.cin + ')" title="Modifier EmpruntRetour" >update</a> ' +
+                                '<a href="#" onclick="deleteEmpruntRetour(' + EmpruntRetour.cin + ')" title="Supprimer EmpruntRetour" >delete</a>' +
+                                '</td>' +
+                                '</tr>';
+                        });
+                        $('#listeEmpruntRetours').html(tr);
+                    } else {
+                        swal({
+                            title: res.title,
+                            text: res.message,
+                            icon: res.icon,
+                            buttons: false,
+                            dangerMode: true,
+                        });
+                    }
+                })
+                .fail(function (res) {
+                    swal({
+                        title: res.title,
+                        text: res.message,
+                        icon: res.icon,
+                        buttons: false,
+                        dangerMode: true,
+                    });
+                })
+                .always(function () {
+
+                });
+        }
+        //End readThemesOnLoad
+
+        //Begin deleteThemeOnClick
+        function deleteEmpruntRetour(cin) {
+            swal({
+                title: "Êtes-vous sûr?",
+                text: "L'EmpruntRetour que vous allez supprimer, ne pourra pas être restaurés!",
+                icon: "warning",
+                buttons: ["Annuler", "Oui, supprimez-le!"],
+                dangerMode: true,
+            })
+                .then((isConfirm) => {
+                    if (isConfirm) {
+                        var url = "../../backend/emprunt.php";
+                        var myOBJ = { "url": url, "action": "delete", "cin": cin };
+                        var myJSON = JSON.stringify(myOBJ);
+
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: myJSON,
+                            dataType: 'json'
+                        })
+                            .done(function (res) {
+                                if (res.success) {
+                                    swal({
+                                        title: res.title,
+                                        text: res.message,
+                                        icon: res.icon,
+                                        buttons: false,
+                                        dangerMode: false,
+                                    });
+                                    readThemes();
+                                } else {
+                                    swal({
+                                        title: res.title,
+                                        text: res.message,
+                                        icon: res.icon,
+                                        buttons: false,
+                                        dangerMode: true,
+                                    });
+                                }
+                            })
+                            .fail(function (res) {
+                                if (!res.success) {
+                                    swal({
+                                        title: res.title,
+                                        text: res.message,
+                                        icon: res.icon,
+                                        buttons: false,
+                                        dangerMode: true,
+                                    });
+                                }
+                            })
+                            .always(function (res) {
+
+                            });
+                    }
+                });
+        }
+        //End deleteThemeOnClick
+
+        //Begin editThemeOnClick
+        function editEmpruntRetour(cin) {
+            var url = "../../backend/emprunt.php";
+            var myOBJ = { "url": url, "action": "edit", "cin": cin };
+
+            globalData = myOBJ;
+            window.localStorage.setItem("globalData", JSON.stringify(globalData));
+
+            $(location).attr('href', "./emprunt_update.html");
+        }
+        //End editThemeOnClick
+
+        // Begin showThemeOnClick
+        function showEmpruntRetour(cin) {
+            var url = "../../backend/emprunt.php";
+            var myOBJ = { "url": url, "action": "show", "cin": cin };
+
+            globalData = myOBJ;
+            window.localStorage.setItem("globalData", JSON.stringify(globalData));
+
+            $(location).attr('href', "./show_emprunt.html");
+        }
+        //End editThemeOnClick
+
+        $(document).ready(function () {
+
+        });
+    </script>
+</body>
+
+</html>

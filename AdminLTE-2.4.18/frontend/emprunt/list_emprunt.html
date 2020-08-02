@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Emprun</title>
+    <script src="../js/jquery-3.3.1.js" type="text/javascript"></script>
+    <script src="../js/sweetalert.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        var globalData ;
+    </script>
+</head>
+<body onload="reademprunts()">
+<div style="width: 50%; margin: 0 auto; ">
+    <div>
+        <table border="1" width="100%">
+            <caption><h1>Liste des emprunts</h1></caption>
+            <thead>
+            <tr>
+                <td colspan="5" align="right" border="0">
+                    <a href="create_emprunt.html" title="Ajouter un nouveau auteur">Nouveau emprun</a>
+                </td>
+            </tr>
+            <tr>
+                <th>cin</th>
+                <th>Livre</th>
+                <th>Date d'emprunt</th>
+                <th>Date retour</th>
+
+                <th width="200">Action</th>
+            </tr>
+            </thead>
+            <tbody id="listemprunt">
+            <tr>
+                <td colspan="3">Aucun emprunt</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+    //Begin ReadEmpruntOnLoad
+    function reademprunts() {
+        $.ajax({
+            url: '../../backend/emprunt.php?action=read',
+            type: 'GET',
+            dataType: 'json'
+        })
+            .done(function (res) {
+                if (res.success) {
+                    var tr;
+                    $.each(res.data, function (i, emprunt) {
+                        tr += '<tr>' +
+                            '<td>' + emprunt.cin + '</td>' +
+                            '<td>' + emprunt.idLivre + '</td>' +
+                            '<td>' + emprunt.dateEmprunt + '</td>' +
+                            '<td>' + emprunt.dateRetour + '</td>' +
+                            '<td>' +
+                            '<a href="#" onclick="showetu(' + emprunt.cin + ','+ emprunt.idLivre + ')" title="Afficher l\'emprunt" >Afficher</a> ' +
+                            '<a href="#" onclick="editetu(' + emprunt.cin + ','+ emprunt.idLivre +  ')" title="Modifier l\'emprunt" >Modifier</a> ' +
+                            '<a href="#" onclick="deleteemprunt(' + emprunt.cin + ','+ emprunt.idLivre +  ')" title="Supprimer l\'emprunt" >Supprimer</a>' +
+                            '</td>' +
+                            '</tr>';
+                    });
+                    $('#listemprunt').html(tr);
+                } else {
+                    swal({
+                        title: res.title,
+                        text: res.message,
+                        icon: res.icon,
+                        buttons: false,
+                        dangerMode: true,
+                    });
+                    //$('#listauteur').html('<tr><td colspan="3">Erreur : ' + res.message + '</td></tr>');
+                }
+            })
+            .fail(function (res) {
+                swal({
+                    title: res.title,
+                    text: res.message,
+                    icon: res.icon,
+                    buttons: false,
+                    dangerMode: true,
+                });
+            })
+            .always(function () {
+
+            });
+    }
+    //End readauteurOnLoad
+
+    //Begin deleteauteurOnClick
+    function deleteemprunt(cin,livre) {
+        swal({
+            title: "Êtes-vous sûr?",
+            text: "Le auteur que vous allez supprimer, ne pourra pas être restaurés!",
+            icon: "warning",
+            buttons: ["Annuler", "Oui, supprimez-le!"],
+            dangerMode: true,
+        })
+            .then((isConfirm) => {
+                if (isConfirm) {
+                    var urldel = "../../backend/emprunt.php";
+                    var myOBJdel = {"url": urldel, "action": "delete", "idLivre": livre, "cin": cin};
+                    var myJSONdel = JSON.stringify(myOBJdel);
+
+                    $.ajax({
+                        url: urldel,
+                        type: 'POST',
+                        data: myJSONdel,
+                        dataType: 'json'
+                    })
+                        .done(function (res) {
+                            if (res.success) {
+                                swal({
+                                    title: res.title,
+                                    text: res.message,
+                                    icon: res.icon,
+                                    buttons: false,
+                                    dangerMode: false,
+                                });
+                                reademprunts();
+                            }else{
+                                swal({
+                                    title: res.title,
+                                    text: res.message,
+                                    icon: res.icon,
+                                    buttons: false,
+                                    dangerMode: true,
+                                });
+                            }
+                        })
+                        .fail(function (res) {
+                            if (!res.success) {
+                                swal({
+                                    title: res.title,
+                                    text: res.message,
+                                    icon: res.icon,
+                                    buttons: false,
+                                    dangerMode: true,
+                                });
+                            }
+                        })
+                        .always(function (res) {
+
+                        });
+                }
+            });
+    }
+    //End deleteauteurOnClick
+
+    //Begin editetuOnClick
+        function editetu(cin,livre) {
+            var url = "../../backend/emprunt.php";
+            var myOBJ = {"url": url, "action": "edit", "idLivre": livre, "cin": cin};
+
+            globalData = myOBJ;
+            window.localStorage.setItem("globalData", JSON.stringify(globalData));
+
+            $(location).attr('href', "./emprunt_update.html");
+        }
+        //End editetuOnClick
+
+        // Begin showetuOnClick
+        function showetu(cin, livre) {
+            var url = "../../backend/emprunt.php";
+            var myOBJ = {"url": url, "action": "show", "idLivre": livre, "cin": cin};
+
+            globalData = myOBJ;
+            window.localStorage.setItem("globalData", JSON.stringify(globalData));
+
+            $(location).attr('href', "./show_emprunt.html"); // window.location = 'auteur_show.html';
+        }
+
+        //End editetuOnClick
+
+        $(document).ready(function () {
+
+        });
+
+</script>
+</body>
+</html>
